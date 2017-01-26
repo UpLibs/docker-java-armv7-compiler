@@ -43,3 +43,32 @@ RUN set -x \
 
 # see CA_CERTIFICATES_JAVA_VERSION notes above
 RUN /var/lib/dpkg/info/ca-certificates-java.postinst configure
+
+# Compile cURL for ARMv7
+cd /tmp
+wget http://curl.haxx.se/download/curl-7.37.1.tar.gz -O curl.tar.gz
+tar xzf curl.tar.gz
+cd curl-7.37.1/
+
+export CROSS_COMPILER=arm-linux-gnueabihf
+export AR=${CROSS_COMPILER}-ar
+export AS=${CROSS_COMPILER}-as
+export LD=${CROSS_COMPILER}-ld
+export RANLIB=${CROSS_COMPILER}-ranlib
+export CC=${CROSS_COMPILER}-gcc
+export CPP=${CROSS_COMPILER}-cpp-4.9
+export NM=${CROSS_COMPILER}-nm
+export ROOTDIR="${PWD}"
+
+mkdir -p ${ROOTDIR}/build/prefix
+mkdir -p ${ROOTDIR}/build/exec-prefix
+
+./configure \
+    --target=arm-linux \
+    --host=arm-linux \
+    --build=i586-pc-linux-gnu \
+	--prefix=${ROOTDIR}/build/prefix \
+    --exec-prefix=${ROOTDIR}/build/exec-prefix
+
+make && make install
+cp -avr build/include/curl/ /usr/include/arm-linux-gnueabihf/
