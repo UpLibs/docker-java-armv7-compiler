@@ -45,31 +45,31 @@ RUN set -x \
 RUN /var/lib/dpkg/info/ca-certificates-java.postinst configure
 
 # Compile cURL for ARMv7
-cd /tmp
-wget http://curl.haxx.se/download/curl-7.37.1.tar.gz -O curl.tar.gz
-tar xzf curl.tar.gz
-cd curl-7.37.1/
+RUN cd /tmp && \
+	wget http://curl.haxx.se/download/curl-7.37.1.tar.gz -O curl.tar.gz && \
+	tar xzf curl.tar.gz 	
 
-export CROSS_COMPILER=arm-linux-gnueabihf
-export AR=${CROSS_COMPILER}-ar
-export AS=${CROSS_COMPILER}-as
-export LD=${CROSS_COMPILER}-ld
-export RANLIB=${CROSS_COMPILER}-ranlib
-export CC=${CROSS_COMPILER}-gcc
-export CPP=${CROSS_COMPILER}-cpp-4.9
-export NM=${CROSS_COMPILER}-nm
-export ROOTDIR="${PWD}"
+RUN cd /tmp/curl-7.37.1/ && \
+	export CROSS_COMPILER=arm-linux-gnueabihf && \
+	export AR=${CROSS_COMPILER}-ar && \
+	export AS=${CROSS_COMPILER}-as && \
+	export LD=${CROSS_COMPILER}-ld && \
+	export RANLIB=${CROSS_COMPILER}-ranlib && \
+	export CC=${CROSS_COMPILER}-gcc && \
+	#export CPP=arm-linux-gnueabihf-cpp-4.9 && \
+	export NM=${CROSS_COMPILER}-nm && \
+	export ROOTDIR="${PWD}"
 
-mkdir -p ${ROOTDIR}/build/prefix
-mkdir -p ${ROOTDIR}/build/exec-prefix
+RUN mkdir -p ${ROOTDIR}/build/prefix
+RUN mkdir -p ${ROOTDIR}/build/exec-prefix
 
-./configure \
-    --target=arm-linux \
-    --host=arm-linux \
-    --build=i586-pc-linux-gnu \
-	--prefix=${ROOTDIR}/build/prefix \
-    --exec-prefix=${ROOTDIR}/build/exec-prefix
+RUN CPP=arm-linux-gnueabihf-cpp-4.9 /tmp/curl-7.37.1/configure \
+		--target=arm-linux \
+		--host=arm-linux \
+		--build=i586-pc-linux-gnu \
+		--prefix=${ROOTDIR}/build/prefix \
+		--exec-prefix=${ROOTDIR}/build/exec-prefix
 
-make && make install
-cp -avr build/prefix/include/curl/ /usr/include/arm-linux-gnueabihf/
-cp -a build/exec-prefix/lib/. /usr/lib/gcc/arm-linux-gnueabihf/4.9/
+RUN make && make install
+RUN cp -avr ${ROOTDIR}/build/prefix/include/curl/ /usr/include/arm-linux-gnueabihf/
+RUN cp -a ${ROOTDIR}/build/exec-prefix/lib/. /usr/lib/gcc/arm-linux-gnueabihf/4.9/
