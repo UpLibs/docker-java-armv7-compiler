@@ -71,4 +71,5 @@ mkdir -p ${ROOTDIR}/build/exec-prefix
     --exec-prefix=${ROOTDIR}/build/exec-prefix
 
 make && make install
-cp -avr build/include/curl/ /usr/include/arm-linux-gnueabihf/
+cp -avr build/prefix/include/curl/ /usr/include/arm-linux-gnueabihf/
+cp -a build/exec-prefix/lib/. /usr/lib/gcc/arm-linux-gnueabihf/4.9/
