@@ -56,7 +56,7 @@ RUN cd /tmp/curl-7.37.1/ && \
 	export LD=${CROSS_COMPILER}-ld && \
 	export RANLIB=${CROSS_COMPILER}-ranlib && \
 	export CC=${CROSS_COMPILER}-gcc && \
-	#export CPP=arm-linux-gnueabihf-cpp-4.9 && \
+	export CPP=arm-linux-gnueabihf-cpp-4.9 && \
 	export NM=${CROSS_COMPILER}-nm && \
 	export ROOTDIR="${PWD}"
 
@@ -73,3 +73,18 @@ RUN CPP=arm-linux-gnueabihf-cpp-4.9 /tmp/curl-7.37.1/configure \
 RUN make && make install
 RUN cp -avr ${ROOTDIR}/build/prefix/include/curl/ /usr/include/arm-linux-gnueabihf/
 RUN cp -a ${ROOTDIR}/build/exec-prefix/lib/. /usr/lib/gcc/arm-linux-gnueabihf/4.9/
+
+# install openSSL for ARMv7
+RUN cd /tmp && \
+	wget https://www.openssl.org/source/openssl-1.0.2k.tar.gz -O openssl.tar.gz && \
+	tar xzf openssl.tar.gz
+
+RUN cd /tmp/openssl-1.0.2k/ && \
+	export ROOTDIR="${PWD}" && \
+	mkdir -p ${ROOTDIR}/build/prefix && \
+	mkdir -p ${ROOTDIR}/build/openssldir && \
+	./Configure -DOPENSSL_NO_HEARTBEATS --openssldir=${ROOTDIR}/build/openssldir shared os/compiler:${CROSS_COMPILER}-gcc && \
+	make && make install && \
+	cp -avr ${ROOTDIR}/build/openssldir/include/openssl/ /usr/include/arm-linux-gnueabihf/ && \
+	cp ${ROOTDIR}/build/openssldir/lib/libssl.a /usr/lib/gcc/arm-linux-gnueabihf/4.9/ && \
+	cp ${ROOTDIR}/build/openssldir/lib/libcrypto.a /usr/lib/gcc/arm-linux-gnueabihf/4.9/
