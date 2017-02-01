@@ -1,26 +1,35 @@
 FROM ubuntu:16.10
 
-# install tools
+## ====================================================================
+## install tools ======================================================
 RUN apt-get update && apt-get install -y --no-install-recommends \
 		bzip2 unzip xz-utils tar gzip nano vim build-essential \
         wget
 
-# install java 8
+## ====================================================================
+## install java 8 =====================================================
 RUN apt-get update && apt-get install -y --no-install-recommends \
     openjdk-8-jdk
 
-# install cross compiler
+## ====================================================================
+## install cross compiler =============================================
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
-# Compile cURL for ARMv7
+## ====================================================================
+## download needed libs ===============================================
+
+# cURL
 RUN cd /tmp && \
 	wget http://curl.haxx.se/download/curl-7.37.1.tar.gz -O curl.tar.gz && \
 	tar xzf curl.tar.gz
+# openSSL
+RUN cd /tmp && \
+	wget https://www.openssl.org/source/openssl-1.0.2k.tar.gz -O openssl.tar.gz && \
+	tar xzf openssl.tar.gz
 
-RUN mkdir -p /tmp/curl-7.37.1/build/prefix
-RUN mkdir -p /tmp/curl-7.37.1/build/exec-prefix
-
+## ====================================================================
+## set env variables for build ========================================
 ENV CROSS_COMPILER arm-linux-gnueabihf
 ENV AR ${CROSS_COMPILER}-ar 
 ENV AS ${CROSS_COMPILER}-as
@@ -30,6 +39,11 @@ ENV CC ${CROSS_COMPILER}-gcc
 ENV CPP ${CROSS_COMPILER}-cpp-6
 ENV NM ${CROSS_COMPILER}-nm
 
+## ====================================================================
+## install cURL for ARMv7 =============================================
+RUN mkdir -p /tmp/curl-7.37.1/build/prefix
+RUN mkdir -p /tmp/curl-7.37.1/build/exec-prefix
+
 RUN cd /tmp/curl-7.37.1/ && \
     /tmp/curl-7.37.1/configure --target=arm-linux --host=arm-linux --build=i586-pc-linux-gnu --prefix=/tmp/curl-7.37.1/build/prefix --exec-prefix=/tmp/curl-7.37.1/build/exec-prefix && \
     make && make install
@@ -37,11 +51,8 @@ RUN cd /tmp/curl-7.37.1/ && \
 RUN cp -avr /tmp/curl-7.37.1/build/prefix/include/curl/ /usr/arm-linux-gnueabihf/include/
 RUN cp -a /tmp/curl-7.37.1/build/exec-prefix/lib/. /usr/arm-linux-gnueabihf/lib/
 
-# Compile openSSL for ARMv7
-RUN cd /tmp && \
-	wget https://www.openssl.org/source/openssl-1.0.2k.tar.gz -O openssl.tar.gz && \
-	tar xzf openssl.tar.gz
-
+## ====================================================================
+## install openSSL for ARMv7 ==========================================
 RUN cd /tmp/openssl-1.0.2k/ && \
 	mkdir -p /tmp/openssl-1.0.2k//build/prefix && \
 	mkdir -p /tmp/openssl-1.0.2k//build/openssldir && \
