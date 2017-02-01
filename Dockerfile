@@ -29,6 +29,29 @@ RUN cd /tmp && \
 	tar xzf openssl.tar.gz
 
 ## ====================================================================
+## install cURL for x86 ===============================================
+RUN mkdir -p /tmp/curl-7.37.1/build/prefix
+RUN mkdir -p /tmp/curl-7.37.1/build/exec-prefix
+
+RUN cd /tmp/curl-7.37.1/ && \
+    /tmp/curl-7.37.1/configure --prefix=/tmp/curl-7.37.1/build/prefix --exec-prefix=/tmp/curl-7.37.1/build/exec-prefix && \
+    make && make install
+
+RUN cp -avr /tmp/curl-7.37.1/build/prefix/include/curl/ /usr/include/
+RUN cp -a /tmp/curl-7.37.1/build/exec-prefix/lib/. /usr/lib/
+
+## ====================================================================
+## install openSSL for x86 ==========================================
+RUN cd /tmp/openssl-1.0.2k/ && \
+	mkdir -p /tmp/openssl-1.0.2k/build/prefix && \
+	mkdir -p /tmp/openssl-1.0.2k/build/openssldir && \
+	./Configure -DOPENSSL_NO_HEARTBEATS --openssldir=/tmp/openssl-1.0.2k/build/openssldir os/compiler:gcc && \
+	make && make install && \
+	cp -avr /tmp/openssl-1.0.2k/build/openssldir/include/openssl/ /usr/include/ && \
+	cp /tmp/openssl-1.0.2k/build/openssldir/lib/libssl.a /usr/lib/ && \
+	cp /tmp/openssl-1.0.2k/build/openssldir/lib/libcrypto.a /usr/lib/
+
+## ====================================================================
 ## set env variables for build ========================================
 ENV CROSS_COMPILER arm-linux-gnueabihf
 ENV AR ${CROSS_COMPILER}-ar 
@@ -53,10 +76,16 @@ RUN cp -a /tmp/curl-7.37.1/build/exec-prefix/lib/. /usr/arm-linux-gnueabihf/lib/
 
 ## ====================================================================
 ## install openSSL for ARMv7 ==========================================
+RUN rm -rf /tmp/openssl-1.0.2k
+
+RUN cd /tmp && \
+	wget https://www.openssl.org/source/openssl-1.0.2k.tar.gz -O openssl.tar.gz && \
+	tar xzf openssl.tar.gz
+
 RUN cd /tmp/openssl-1.0.2k/ && \
-	mkdir -p /tmp/openssl-1.0.2k//build/prefix && \
-	mkdir -p /tmp/openssl-1.0.2k//build/openssldir && \
-	./Configure -DOPENSSL_NO_HEARTBEATS --openssldir=/tmp/openssl-1.0.2k//build/openssldir shared os/compiler:${CROSS_COMPILER}-gcc && \
+	mkdir -p /tmp/openssl-1.0.2k/build/prefix && \
+	mkdir -p /tmp/openssl-1.0.2k/build/openssldir && \
+	./Configure -DOPENSSL_NO_HEARTBEATS --openssldir=/tmp/openssl-1.0.2k/build/openssldir shared os/compiler:${CROSS_COMPILER}-gcc && \
 	make && make install && \
 	cp -avr /tmp/openssl-1.0.2k/build/openssldir/include/openssl/ /usr/arm-linux-gnueabihf/include/ && \
 	cp /tmp/openssl-1.0.2k/build/openssldir/lib/libssl.a /usr/arm-linux-gnueabihf/lib/ && \
