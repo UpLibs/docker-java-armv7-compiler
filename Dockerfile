@@ -27,6 +27,12 @@ RUN cd /tmp && \
 RUN cd /tmp && \
 	wget https://www.openssl.org/source/openssl-1.0.2k.tar.gz -O openssl.tar.gz && \
 	tar xzf openssl.tar.gz
+# nlohmann/json
+RUN cd /tmp && \
+	wget https://github.com/nlohmann/json/releases/download/v2.1.0/json.hpp 
+# catch/catch
+RUN cd /tmp && \
+	wget https://github.com/philsquared/Catch/releases/download/v1.7.1/catch.hpp 
 
 ## ====================================================================
 ## install cURL for x86 ===============================================
@@ -52,6 +58,16 @@ RUN cd /tmp/openssl-1.0.2k/ && \
 	cp /tmp/openssl-1.0.2k/build/openssldir/lib/libcrypto.a /usr/lib/
 
 ## ====================================================================
+## install catch/catch for x86 ========================================
+RUN mkdir -p /usr/include/catch && \
+	mv /tmp/catch.hpp /usr/include/catch/
+
+## ====================================================================
+## install nlohmann/json for x86 ======================================
+RUN mkdir -p /usr/include/nlohmann && \
+	cp /tmp/json.hpp /usr/include/nlohmann/
+
+## ====================================================================
 ## set env variables for build ========================================
 ENV CROSS_COMPILER arm-linux-gnueabihf
 ENV AR ${CROSS_COMPILER}-ar 
@@ -61,6 +77,11 @@ ENV RANLIB ${CROSS_COMPILER}-ranlib
 ENV CC ${CROSS_COMPILER}-gcc
 ENV CPP ${CROSS_COMPILER}-cpp-6
 ENV NM ${CROSS_COMPILER}-nm
+
+## ====================================================================
+## install nlohmann/json for ARMv7 ======================================
+RUN mkdir -p /usr/arm-linux-gnueabihf/include/nlohmann && \
+	mv /tmp/json.hpp /usr/arm-linux-gnueabihf/include/nlohmann/
 
 ## ====================================================================
 ## install cURL for ARMv7 =============================================
