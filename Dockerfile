@@ -4,7 +4,7 @@ FROM ubuntu:16.10
 ## install tools ======================================================
 RUN apt-get update && apt-get install -y --no-install-recommends \
 		bzip2 unzip xz-utils tar gzip nano vim build-essential \
-        wget
+        wget python python-pip
 
 ## ====================================================================
 ## install java 8 =====================================================
@@ -15,6 +15,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ## install cross compiler =============================================
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
+
+## ====================================================================
+## install gcorv ======================================================
+RUN pip install gcovr
 
 ## ====================================================================
 ## download needed libs ===============================================
